@@ -3,71 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>پخش‌کننده استریم چندگانه</title>
+  <title>پخش زنده شبکه‌ها</title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
   <style>
-    body { background:#0f0f0f; color:#eee; font-family:Tahoma; margin:0; padding:20px; }
-    h1 { text-align:center; color:#0f0; margin-bottom:30px; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(520px, 1fr)); gap:25px; max-width:1600px; margin:auto; }
-    .card { background:#1a1a1a; border-radius:12px; overflow:hidden; box-shadow:0 4px 25px rgba(0,0,0,0.6); }
-    .header { padding:12px 15px; background:#222; display:flex; justify-content:space-between; align-items:center; font-size:14px; }
-    video { width:100%; background:#000; }
-    input { width:100%; padding:12px; margin:10px 0; background:#222; border:1px solid #444; border-radius:8px; color:#fff; font-size:15px; }
-    button { padding:12px 20px; background:#e50914; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0a0a0a;
+      color: #eee;
+      font-family: Tahoma, sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 280px;
+      background: #111;
+      padding: 20px;
+      overflow-y: auto;
+      border-left: 1px solid #333;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #00ff88;
+      margin: 0 0 20px 0;
+    }
+    .channel-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .channel-item {
+      padding: 14px 18px;
+      margin: 6px 0;
+      background: #1a1a1a;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 15px;
+    }
+    .channel-item:hover {
+      background: #252525;
+      transform: translateX(-5px);
+    }
+    .channel-item.active {
+      background: #e50914;
+      color: white;
+      font-weight: bold;
+    }
+    video {
+      width: 100%;
+      max-height: 75vh;
+      background: #000;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    }
+    .custom {
+      margin-top: 25px;
+      display: flex;
+      gap: 10px;
+    }
+    input {
+      flex: 1;
+      padding: 14px;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 15px;
+    }
+    button {
+      padding: 14px 24px;
+      background: #e50914;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { background: #f00; }
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      color: #0f0;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <h1>🎬 پخش‌کننده استریم خودکار (چند پخش همزمان)</h1>
-  
-  <div class="grid" id="players"></div>
 
-  <div style="text-align:center; margin-top:30px;">
-    <input type="text" id="newUrl" placeholder="لینک استریم (m3u8 یا mp4)" style="width:500px;padding:14px;font-size:16px;">
-    <button onclick="addNewPlayer()">➕ اضافه کردن پخش جدید</button>
+  <!-- سایدبار کانال‌ها -->
+  <div class="sidebar">
+    <h1>📺 شبکه‌ها</h1>
+    <ul class="channel-list" id="channelList"></ul>
+
+    <div class="custom">
+      <input type="text" id="newUrl" placeholder="لینک m3u8 یا mp4 جدید">
+      <button onclick="addCustom()">پخش</button>
+    </div>
+  </div>
+
+  <!-- پخش‌کننده اصلی -->
+  <div class="main">
+    <video id="mainVideo" controls autoplay muted playsinline></video>
+    <div class="status" id="status">کانال را از لیست انتخاب کنید</div>
   </div>
 
   <script>
-    const WORKER_URL = "https://test-tv.netmodvpn-3d1.workers.dev/";   // <<< اینجا عوض کن!!!
+    const WORKER_URL = "https://test-tv.netmodvpn-3d1.workers.dev/";   // <<< اینجا آدرس ورکرت رو عوض کن
 
-    function createPlayer(streamUrl) {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="header">
-          <span>پخش ${document.querySelectorAll('.card').length + 1}</span>
-          <button onclick="this.closest('.card').remove()">✕</button>
-        </div>
-        <video controls autoplay muted playsinline></video>
-      `;
-      
-      document.getElementById('players').appendChild(card);
-      const video = card.querySelector('video');
+    const channels = [
+      { name: "پرشیانا اسپورت", url: "https://stream.live12.ir/hls2/persiana.m3u8" },
+      { name: "پرشیانا اسپورت ۲", url: "https://stream.live12.ir/hls2/persiana2.m3u8" },
+      { name: "جم اسپورت", url: "https://cdn.sainaertebat.com/hls/gemsport/stream.m3u8" },
+      { name: "شبکه سه", url: "https://cdnw.telewebion.com/tv3/live/playlist.m3u8" },
+      { name: "شبکه ورزش", url: "https://cdnw.telewebion.com/varzesh/live/playlist.m3u8" },
+      { name: "Iran International", url: "https://live.livetvstream.co.uk/LS-63503-4/index.m3u8" },
+      { name: "VOA Persian", url: "https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8" },
+      { name: "AVA Family", url: "https://familyhls.avatv.live/hls/stream.m3u8" },
+      { name: "AVA Series", url: "https://avaserieshls.wns.live/hls/stream.m3u8" }
+    ];
 
-      // تبدیل به لینک پروکسی Worker
-      const proxied = streamUrl.includes('/proxy?url=') ? streamUrl : 
-                     `${WORKER_URL}/proxy?url=${encodeURIComponent(streamUrl)}`;
+    let currentHls = null;
+    const video = document.getElementById('mainVideo');
+    const status = document.getElementById('status');
 
-      if (Hls.isSupported() && (streamUrl.includes('.m3u8') || streamUrl.includes('.m3u'))) {
-        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-        hls.loadSource(proxied);
-        hls.attachMedia(video);
-      } else {
-        video.src = proxied;
+    function loadChannel(name, streamUrl) {
+      // پاک کردن قبلی
+      if (currentHls) {
+        currentHls.destroy();
+        currentHls = null;
       }
-      
+      video.src = '';
+
+      // فعال کردن دکمه
+      document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.channel-item')).find(el => el.textContent === name);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const proxiedUrl = `\( {WORKER_URL}/proxy?url= \){encodeURIComponent(streamUrl)}`;
+
+      status.textContent = `در حال پخش: ${name}`;
+
+      if (Hls.isSupported()) {
+        currentHls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 30
+        });
+        currentHls.loadSource(proxiedUrl);
+        currentHls.attachMedia(video);
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = proxiedUrl;
+      } else {
+        video.src = proxiedUrl;
+      }
+
       video.play().catch(() => {});
     }
 
-    function addNewPlayer() {
+    function addCustom() {
       const input = document.getElementById('newUrl');
-      if (!input.value.trim()) return alert('لینک را وارد کنید');
-      createPlayer(input.value.trim());
+      const url = input.value.trim();
+      if (!url) return alert('لینک را وارد کنید');
+      loadChannel("پخش سفارشی", url);
       input.value = '';
     }
 
-    // مثال اولیه (می‌تونی کامنتش کنی)
+    // ساخت لیست کانال‌ها
     window.onload = () => {
-      // createPlayer('https://test-streams.mux.dev/x264_720p_1500kbs/playlist.m3u8');
+      const list = document.getElementById('channelList');
+      channels.forEach(ch => {
+        const li = document.createElement('li');
+        li.className = 'channel-item';
+        li.textContent = ch.name;
+        li.onclick = () => loadChannel(ch.name, ch.url);
+        list.appendChild(li);
+      });
+
+      // پخش خودکار اولین کانال
+      loadChannel(channels[0].name, channels[0].url);
     };
   </script>
 </body>
