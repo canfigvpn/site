@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پخش‌کننده استریم چندگانه</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+  <style>
+    body { background:#0f0f0f; color:#eee; font-family:Tahoma; margin:0; padding:20px; }
+    h1 { text-align:center; color:#0f0; margin-bottom:30px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(520px, 1fr)); gap:25px; max-width:1600px; margin:auto; }
+    .card { background:#1a1a1a; border-radius:12px; overflow:hidden; box-shadow:0 4px 25px rgba(0,0,0,0.6); }
+    .header { padding:12px 15px; background:#222; display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+    video { width:100%; background:#000; }
+    input { width:100%; padding:12px; margin:10px 0; background:#222; border:1px solid #444; border-radius:8px; color:#fff; font-size:15px; }
+    button { padding:12px 20px; background:#e50914; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h1>🎬 پخش‌کننده استریم خودکار (چند پخش همزمان)</h1>
+  
+  <div class="grid" id="players"></div>
 
+  <div style="text-align:center; margin-top:30px;">
+    <input type="text" id="newUrl" placeholder="لینک استریم (m3u8 یا mp4)" style="width:500px;padding:14px;font-size:16px;">
+    <button onclick="addNewPlayer()">➕ اضافه کردن پخش جدید</button>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://test-tv.netmodvpn-3d1.workers.dev/";   // <<< اینجا عوض کن!!!
+
+    function createPlayer(streamUrl) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="header">
+          <span>پخش ${document.querySelectorAll('.card').length + 1}</span>
+          <button onclick="this.closest('.card').remove()">✕</button>
+        </div>
+        <video controls autoplay muted playsinline></video>
+      `;
+      
+      document.getElementById('players').appendChild(card);
+      const video = card.querySelector('video');
+
+      // تبدیل به لینک پروکسی Worker
+      const proxied = streamUrl.includes('/proxy?url=') ? streamUrl : 
+                     `${WORKER_URL}/proxy?url=${encodeURIComponent(streamUrl)}`;
+
+      if (Hls.isSupported() && (streamUrl.includes('.m3u8') || streamUrl.includes('.m3u'))) {
+        const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        hls.loadSource(proxied);
+        hls.attachMedia(video);
+      } else {
+        video.src = proxied;
+      }
+      
+      video.play().catch(() => {});
+    }
+
+    function addNewPlayer() {
+      const input = document.getElementById('newUrl');
+      if (!input.value.trim()) return alert('لینک را وارد کنید');
+      createPlayer(input.value.trim());
+      input.value = '';
+    }
+
+    // مثال اولیه (می‌تونی کامنتش کنی)
+    window.onload = () => {
+      // createPlayer('https://test-streams.mux.dev/x264_720p_1500kbs/playlist.m3u8');
+    };
+  </script>
+</body>
+</html>
