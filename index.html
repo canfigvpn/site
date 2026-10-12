@@ -1,201 +1,1175 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-  <title>پخش زنده شبکه‌ها</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      padding: 0;
-      background: #0a0a0a;
-      color: #eee;
-      font-family: Tahoma, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    .header {
-      background: #111;
-      padding: 15px;
-      text-align: center;
-      font-size: 18px;
-      color: #00ff88;
-    }
-    .container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .sidebar {
-      width: 280px;
-      background: #111;
-      padding: 15px;
-      overflow-y: auto;
-      border-left: 1px solid #333;
-    }
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      overflow: hidden;
-    }
-    .channel-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .channel-item {
-      padding: 14px 16px;
-      margin: 6px 0;
-      background: #1a1a1a;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .channel-item:hover { background: #252525; }
-    .channel-item.active {
-      background: #e50914;
-      color: white;
-      font-weight: bold;
-    }
-    video {
-      width: 100%;
-      height: 100%;
-      background: #000;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    }
-    .custom {
-      margin-top: 15px;
-      display: flex;
-      gap: 8px;
-    }
-    input {
-      flex: 1;
-      padding: 14px;
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 15px;
-    }
-    button {
-      padding: 14px 20px;
-      background: #e50914;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .status {
-      text-align: center;
-      padding: 10px;
-      color: #0f0;
-      font-size: 14px;
-      background: #1a1a1a;
-      border-radius: 8px;
-      margin-top: 10px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0D1017" id="metaTheme">
+<meta name="description" content="SpaedrNG — فروشگاه نرم‌افزارهای امن، متن‌باز و بررسی‌شده برای اندروید و وب">
+<meta property="og:title" content="SpaedrNG — فروشگاه نرم‌افزار">
+<meta property="og:description" content="نرم‌افزارهای متن‌باز و بررسی‌شده برای اندروید و وب">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D1017'/%3E%3Ctext x='50%25' y='56%25' font-family='sans-serif' font-size='36' font-weight='800' fill='%23C49A6C' text-anchor='middle' dominant-baseline='middle'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="manifest" id="manifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.github.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>SpaedrNG — فروشگاه نرم‌افزار</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
 
-    /* Responsive موبایل */
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .sidebar { width: 100%; max-height: 35vh; }
-      .main { padding: 10px; }
-      video { height: auto; max-height: 55vh; }
-      .channel-item { font-size: 14px; padding: 12px 14px; }
-    }
-  </style>
+:root{
+  --bg:#0D1017; --surface:#171C26; --surface-2:#202736; --surface-3:#2a3242;
+  --border:#232b3a; --border-2:#2e3849;
+  --text:#F4F6FA; --text-dim:#98a2b3; --text-mute:#6b7689;
+  --accent:#C49A6C; --accent-h:#d4ab7d; --accent-fg:#1a1208;
+  --success:#4ade80; --danger:#f87171; --warning:#fbbf24; --info:#60a5fa;
+  --r:14px; --r-sm:10px; --r-lg:20px; --r-full:999px;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --shadow-sm:0 4px 12px rgba(0,0,0,.25);
+  --t:.18s ease;
+}
+[data-theme="light"]{
+  --bg:#f4f6fa; --surface:#ffffff; --surface-2:#eef1f6; --surface-3:#e2e7ef;
+  --border:#e0e5ee; --border-2:#cfd6e2;
+  --text:#11151c; --text-dim:#4a5567; --text-mute:#6b7689;
+  --accent:#a97a45; --accent-h:#8a6236; --accent-fg:#ffffff;
+  --shadow:0 10px 30px rgba(20,30,60,.08);
+  --shadow-sm:0 4px 12px rgba(20,30,60,.06);
+}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"Vazirmatn","Segoe UI",Tahoma,system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.7; min-height:100vh;
+  transition:background var(--t),color var(--t);
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit}
+button:focus,a:focus,input:focus,select:focus{outline:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px; border-radius:6px;
+}
+svg{display:block}
+
+/* Header */
+.app-header{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(140%) blur(14px);
+  -webkit-backdrop-filter:saturate(140%) blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.header-inner{
+  max-width:1200px; margin:0 auto;
+  padding:12px 20px;
+  display:flex; align-items:center; gap:12px;
+}
+.logo{
+  display:flex; align-items:center; gap:10px;
+  font-weight:700; font-size:18px; color:var(--text);
+  text-decoration:none; flex-shrink:0;
+}
+.logo-mark{
+  width:34px; height:34px; border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),#8a6236);
+  display:grid; place-items:center; color:var(--accent-fg);
+  font-weight:800; font-size:16px;
+  box-shadow:0 4px 14px rgba(196,154,108,.35);
+}
+.search-wrap{flex:1; position:relative; min-width:0}
+.search-wrap > svg{
+  position:absolute; inset-inline-start:14px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; color:var(--text-mute); pointer-events:none;
+}
+#search{
+  width:100%; height:42px; padding:0 42px 0 42px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-full); color:var(--text);
+  font:inherit; font-size:14px;
+  transition:border-color var(--t),background var(--t);
+}
+#search:focus{border-color:var(--accent); background:var(--surface-2)}
+#search::placeholder{color:var(--text-mute)}
+.icon-btn{
+  width:42px; height:42px; flex-shrink:0;
+  display:grid; place-items:center;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-full); color:var(--text-dim); cursor:pointer;
+  transition:all var(--t);
+}
+.icon-btn:hover{color:var(--text); background:var(--surface-2); border-color:var(--border-2)}
+.icon-btn svg{width:18px; height:18px}
+
+/* Toolbar */
+.toolbar{
+  max-width:1200px; margin:0 auto;
+  padding:16px 20px 4px;
+  display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+}
+.chips{
+  display:flex; gap:8px; overflow-x:auto;
+  padding-bottom:4px; flex:1; min-width:0;
+  scrollbar-width:none;
+}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex-shrink:0;
+  padding:6px 14px; border-radius:var(--r-full);
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text-dim); cursor:pointer;
+  font:inherit; font-size:13px; font-weight:500;
+  transition:all var(--t); white-space:nowrap;
+}
+.chip:hover{color:var(--text); border-color:var(--border-2)}
+.chip.active{background:var(--accent); border-color:var(--accent); color:var(--accent-fg)}
+select.chip{
+  appearance:none; -webkit-appearance:none;
+  padding-inline-end:28px; cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%2398a2b3' stroke-width='1.5'><path d='M3 5l3 3 3-3'/></svg>");
+  background-repeat:no-repeat;
+  background-position:left 10px center;
+  background-size:12px;
+}
+[data-theme="light"] select.chip{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%234a5567' stroke-width='1.5'><path d='M3 5l3 3 3-3'/></svg>");
+}
+
+/* Grid */
+.grid{
+  max-width:1200px; margin:0 auto;
+  padding:20px;
+  display:grid; gap:16px;
+  grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  animation:fadeIn .25s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none}}
+
+.card{
+  position:relative; overflow:hidden;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:18px;
+  display:flex; flex-direction:column; gap:12px;
+  cursor:pointer;
+  transition:transform var(--t),border-color var(--t),box-shadow var(--t);
+}
+.card:hover{transform:translateY(-3px); border-color:var(--border-2); box-shadow:var(--shadow)}
+.card-head{display:flex; align-items:center; gap:12px}
+.card-icon{
+  width:52px; height:52px; flex-shrink:0; border-radius:14px;
+  display:grid; place-items:center; font-size:24px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 25%,var(--surface-2)),var(--surface-2));
+  border:1px solid var(--border-2);
+}
+.card-titles{min-width:0; flex:1}
+.card-name{
+  font-size:15px; font-weight:600; color:var(--text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.card-dev{
+  font-size:12.5px; color:var(--text-mute);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.card-tagline{
+  font-size:13.5px; color:var(--text-dim); line-height:1.65; margin:0;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; min-height:2.6em;
+}
+.card-foot{
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  margin-top:auto; padding-top:12px; border-top:1px solid var(--border);
+}
+.meta-pill{
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 9px; border-radius:var(--r-full);
+  background:var(--surface-2); border:1px solid var(--border);
+  font-size:11.5px; color:var(--text-dim); font-weight:500;
+}
+.meta-pill svg{width:11px; height:11px}
+.meta-pill.accent{
+  color:var(--accent);
+  border-color:color-mix(in srgb,var(--accent) 35%,var(--border));
+  background:color-mix(in srgb,var(--accent) 10%,var(--surface-2));
+}
+.fav-btn{
+  position:absolute; top:14px; inset-inline-end:14px;
+  width:32px; height:32px;
+  display:grid; place-items:center; border-radius:var(--r-full);
+  background:color-mix(in srgb,var(--surface) 70%,transparent);
+  backdrop-filter:blur(8px);
+  border:1px solid var(--border);
+  color:var(--text-mute); cursor:pointer;
+  transition:all var(--t); z-index:2;
+}
+.fav-btn:hover{color:var(--accent); border-color:var(--accent)}
+.fav-btn.active{
+  color:var(--accent);
+  background:color-mix(in srgb,var(--accent) 15%,var(--surface));
+  border-color:var(--accent);
+}
+.fav-btn svg{width:15px; height:15px}
+
+/* Details */
+.details{
+  max-width:920px; margin:0 auto; padding:20px;
+  animation:fadeIn .25s ease;
+}
+.back-btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 14px; border-radius:var(--r-full);
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text-dim); cursor:pointer;
+  font:inherit; font-size:13.5px; font-weight:500;
+  transition:all var(--t); margin-bottom:16px;
+}
+.back-btn:hover{color:var(--text); border-color:var(--border-2); background:var(--surface-2)}
+.back-btn svg{width:14px; height:14px}
+.details-hero{
+  display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap;
+  padding:22px; border-radius:var(--r-lg);
+  background:linear-gradient(180deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border);
+}
+.details-icon{
+  width:84px; height:84px; border-radius:22px; flex-shrink:0;
+  display:grid; place-items:center; font-size:40px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 30%,var(--surface-2)),var(--surface-2));
+  border:1px solid var(--border-2);
+}
+.details-titles{flex:1; min-width:220px}
+.details-name{font-size:22px; font-weight:700; margin:0 0 4px}
+.details-dev{font-size:13.5px; color:var(--text-mute); margin-bottom:8px}
+.details-tagline{font-size:14px; color:var(--text-dim); line-height:1.7; margin:0}
+.details-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 18px; border-radius:var(--r-full);
+  font:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
+  border:1px solid transparent; transition:all var(--t);
+  text-decoration:none; white-space:nowrap;
+}
+.btn svg{width:15px; height:15px}
+.btn-primary{background:var(--accent); color:var(--accent-fg)}
+.btn-primary:hover{background:var(--accent-h); transform:translateY(-1px); box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 35%,transparent)}
+.btn-secondary{background:var(--surface-2); border-color:var(--border); color:var(--text)}
+.btn-secondary:hover{border-color:var(--border-2); background:var(--surface-3)}
+.btn-ghost{background:transparent; color:var(--text-dim); border-color:var(--border)}
+.btn-ghost:hover{color:var(--text); border-color:var(--border-2)}
+
+.section{margin-top:24px}
+.section-title{
+  font-size:15px; font-weight:600; margin:0 0 12px;
+  display:flex; align-items:center; gap:8px;
+}
+.section-title svg{width:16px; height:16px; color:var(--accent)}
+
+.meta-grid{
+  display:grid; gap:10px;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+}
+.meta-card{
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:12px 14px;
+}
+.meta-label{font-size:11.5px; color:var(--text-mute); margin-bottom:4px}
+.meta-value{font-size:14px; font-weight:600; color:var(--text)}
+
+.features{list-style:none; padding:0; margin:0; display:grid; gap:8px}
+.features li{
+  display:flex; gap:10px; align-items:flex-start;
+  padding:10px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--r);
+  font-size:13.5px; color:var(--text-dim);
+}
+.features li::before{
+  content:""; flex-shrink:0; width:18px; height:18px;
+  border-radius:50%; margin-top:2px;
+  background-color:color-mix(in srgb,var(--success) 20%,transparent);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6L9 17l-5-5'/></svg>");
+  background-size:12px; background-position:center; background-repeat:no-repeat;
+}
+
+.downloads{display:grid; gap:8px}
+.dl-row{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; background:var(--surface);
+  border:1px solid var(--border); border-radius:var(--r);
+  transition:border-color var(--t),background var(--t);
+  flex-wrap:wrap;
+}
+.dl-row:hover{border-color:var(--border-2); background:var(--surface-2)}
+.dl-icon{
+  width:38px; height:38px; flex-shrink:0; border-radius:10px;
+  display:grid; place-items:center;
+  background:color-mix(in srgb,var(--accent) 12%,var(--surface-2));
+  border:1px solid var(--border); color:var(--accent);
+}
+.dl-icon svg{width:17px; height:17px}
+.dl-info{flex:1; min-width:180px}
+.dl-name{font-size:13.5px; font-weight:600; color:var(--text); margin-bottom:2px; word-break:break-all}
+.dl-meta{font-size:11.5px; color:var(--text-mute); display:flex; gap:10px; flex-wrap:wrap}
+.dl-badge{
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:var(--r-full);
+}
+.dl-badge.verified{background:color-mix(in srgb,var(--success) 15%,transparent); color:var(--success)}
+.dl-badge.unverified{background:color-mix(in srgb,var(--warning) 15%,transparent); color:var(--warning)}
+.dl-badge svg{width:10px; height:10px}
+
+.empty{
+  text-align:center; padding:60px 20px; color:var(--text-mute);
+  max-width:1200px; margin:0 auto;
+}
+.empty svg{width:48px; height:48px; margin:0 auto 12px; opacity:.4}
+.empty h3{margin:0 0 6px; color:var(--text-dim); font-weight:600; font-size:16px}
+.empty p{margin:0; font-size:13.5px}
+
+.skeleton{
+  background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite linear;
+  border-radius:var(--r-sm);
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+.toast-wrap{
+  position:fixed; bottom:20px; inset-inline-start:20px;
+  z-index:200; display:flex; flex-direction:column; gap:8px;
+  pointer-events:none;
+}
+.toast{
+  padding:12px 18px; border-radius:var(--r);
+  background:var(--surface-2); border:1px solid var(--border-2);
+  color:var(--text); font-size:13px; font-weight:500;
+  box-shadow:var(--shadow);
+  animation:slideUp .2s ease;
+  pointer-events:auto;
+}
+.toast.error{border-color:color-mix(in srgb,var(--danger) 50%,var(--border))}
+.toast.success{border-color:color-mix(in srgb,var(--success) 50%,var(--border))}
+@keyframes slideUp{from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none}}
+
+@media (max-width:640px){
+  .header-inner{padding:10px 14px; gap:10px}
+  .logo-text{display:none}
+  .toolbar{padding:12px 14px 4px}
+  .grid{padding:14px; gap:12px; grid-template-columns:1fr}
+  .details{padding:14px}
+  .details-hero{padding:16px; gap:14px}
+  .details-icon{width:64px; height:64px; font-size:32px; border-radius:18px}
+  .details-name{font-size:19px}
+  .meta-grid{grid-template-columns:repeat(2,1fr)}
+  .details-actions .btn{flex:1; justify-content:center}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
 </head>
 <body>
 
-  <div class="header">📺 پخش زنده شبکه‌های ورزشی و خبری</div>
-
-  <div class="container">
-    <!-- سایدبار کانال‌ها -->
-    <div class="sidebar">
-      <ul class="channel-list" id="channelList"></ul>
-
-      <div class="custom">
-        <input type="text" id="newUrl" placeholder="لینک جدید (m3u8 یا mp4)">
-        <button onclick="addCustom()">پخش</button>
-      </div>
+<header class="app-header">
+  <div class="header-inner">
+    <a class="logo" href="./" id="logoLink" aria-label="SpaedrNG — بازگشت به فروشگاه">
+      <div class="logo-mark" aria-hidden="true">S</div>
+      <span class="logo-text">SpaedrNG</span>
+    </a>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="search" placeholder="جستجو در نام، سازنده یا تگ‌ها…" autocomplete="off" aria-label="جستجو در برنامه‌ها">
     </div>
-
-    <!-- پخش‌کننده اصلی -->
-    <div class="main">
-      <video id="mainVideo" controls autoplay playsinline></video>
-      <div class="status" id="status">کانال را انتخاب کنید</div>
-    </div>
+    <button class="icon-btn" id="themeBtn" aria-label="تغییر تم"></button>
   </div>
+</header>
 
-  <script>
-    const WORKER_URL = "https://test-tv.netmodvpn-3d1.workers.dev";
+<main id="app" role="main"></main>
+<div id="toasts" class="toast-wrap" aria-live="polite" aria-atomic="true"></div>
 
-    const channels = [
-      { name: "پرشیانا اسپورت", url: "https://stream.live12.ir/hls2/persiana.m3u8" },
-      { name: "پرشیانا اسپورت ۲", url: "https://stream.live12.ir/hls2/persiana2.m3u8" },
-      { name: "جم اسپورت", url: "https://cdn.sainaertebat.com/hls/gemsport/stream.m3u8" },
-      { name: "شبکه سه", url: "https://cdnw.telewebion.com/tv3/live/playlist.m3u8" },
-      { name: "شبکه ورزش", url: "https://cdnw.telewebion.com/varzesh/live/playlist.m3u8" },
-      { name: "Iran International", url: "https://live.livetvstream.co.uk/LS-63503-4/index.m3u8" },
-      { name: "VOA Persian", url: "https://voa-ingest.akamaized.net/hls/live/2033876/tvmc07/playlist.m3u8" },
-      { name: "AVA Family", url: "https://familyhls.avatv.live/hls/stream.m3u8" },
-      { name: "AVA Series", url: "https://avaserieshls.wns.live/hls/stream.m3u8" }
-    ];
+<script>
+'use strict';
 
-    let currentHls = null;
-    const video = document.getElementById('mainVideo');
-    const status = document.getElementById('status');
+/* ============================================================
+   1) داده‌ها
+   ============================================================ */
+const CATEGORIES = [
+  {id:'all',      label:'همه'},
+  {id:'vpn',      label:'VPN و تونل'},
+  {id:'network',  label:'شبکه'},
+  {id:'dev',      label:'توسعه'},
+  {id:'web',      label:'وب‌پنل'},
+  {id:'security', label:'امنیت'},
+  {id:'tool',     label:'ابزار'},
+];
 
-    function loadChannel(name, streamUrl) {
-      if (currentHls) { currentHls.destroy(); currentHls = null; }
-      video.src = '';
+const APPS = [
+  {
+    id:'aras-client',
+    name:'Aras Client',
+    developer:'Aras Project',
+    tagline:'کلاینت تونل‌زنی سریع و سبک با پشتیبانی از پروتکل‌های مدرن',
+    description:'Aras Client یک کلاینت تونل‌زنی متن‌باز برای اندروید است که از پروتکل‌های VLESS، VMess، Trojan و Shadowsocks پشتیبانی می‌کند. رابط کاربری ساده، مصرف باتری پایین و امکان وارد کردن کانفیگ از کلیپ‌بورد یا فایل از ویژگی‌های اصلی آن است.',
+    category:'vpn',
+    tags:['vpn','tunnel','proxy','xray','sing-box'],
+    version:'2.4.0',
+    releasedAt:'2025-01-20',
+    size:'14.2 MB',
+    architectures:['arm64-v8a','armeabi-v7a','x86_64'],
+    features:[
+      'پشتیبانی از VLESS، VMess، Trojan و Shadowsocks',
+      'حالت Split Tunneling با انتخاب اپلیکیشن',
+      'اتصال خودکار در زمان بوت دستگاه',
+      'وارد کردن کانفیگ از کلیپ‌بورد، فایل یا QR',
+      'بدون تبلیغ، بدون ردیاب و بدون جمع‌آوری داده'
+    ],
+    repo:null,
+    homepage:null,
+    icon:'🛡️'
+  },
+  {
+    id:'bpb-panel',
+    name:'BPB Panel',
+    developer:'BPB Worker',
+    tagline:'وب‌پنل پیشرفته برای مدیریت کانفیگ‌های Cloudflare Worker',
+    description:'BPB Panel یک وب‌پنل متن‌باز برای راه‌اندازی و مدیریت کانفیگ‌های Cloudflare Worker است. با این پنل می‌توانید بدون نیاز به سرور اختصاصی، کانفیگ‌های شخصی خود را بسازید و به‌صورت خودکار به‌روزرسانی کنید.',
+    category:'web',
+    tags:['cloudflare','worker','panel','vless'],
+    version:'3.1.2',
+    releasedAt:'2025-01-10',
+    size:'وب‌اپلیکیشن',
+    architectures:[],
+    features:[
+      'راه‌اندازی روی Cloudflare Workers بدون سرور',
+      'به‌روزرسانی خودکار کانفیگ‌ها',
+      'پشتیبانی از Fragment و Chain Proxy',
+      'داشبورد مدیریت با رمز عبور',
+      'نصب خودکار از طریق لینک'
+    ],
+    repo:'bia-pain-bache/BPB-Worker-Panel',
+    homepage:'https://github.com/bia-pain-bache/BPB-Worker-Panel',
+    icon:'⚡'
+  },
+  {
+    id:'netra',
+    name:'Netra',
+    developer:'Netra Tools',
+    tagline:'جعبه‌ابزار شبکه برای تست اتصال، DNS و پینگ',
+    description:'Netra مجموعه‌ای از ابزارهای شبکه در یک اپلیکیشن اندرویدی است. تست پینگ، بررسی DNS، ردیابی مسیر و تست سرعت در یک رابط کاربری تمیز و بدون تبلیغ ارائه می‌شود.',
+    category:'network',
+    tags:['network','dns','ping','speed','traceroute'],
+    version:'1.8.5',
+    releasedAt:'2024-12-28',
+    size:'6.8 MB',
+    architectures:['arm64-v8a','armeabi-v7a'],
+    features:[
+      'تست پینگ و Traceroute',
+      'بررسی و مقایسه سرورهای DNS',
+      'تست سرعت دانلود و آپلود',
+      'نمایش اطلاعات Wi-Fi و شبکه',
+      'رابط کاربری ساده و بدون تبلیغ'
+    ],
+    repo:null,
+    homepage:null,
+    icon:'📡'
+  },
+  {
+    id:'pars-space',
+    name:'Pars Space',
+    developer:'Pars Team',
+    tagline:'وب‌پنل مدیریت فایل و فضای ابری روی زیرساخت Serverless',
+    description:'Pars Space یک وب‌پنل سبک برای مدیریت فایل روی زیرساخت‌های Serverless است. امکان آپلود، دانلود و اشتراک‌گذاری فایل با لینک اختصاصی فراهم می‌شود.',
+    category:'web',
+    tags:['cloud','storage','worker','file','r2'],
+    version:'2.0.3',
+    releasedAt:'2024-11-15',
+    size:'وب‌اپلیکیشن',
+    architectures:[],
+    features:[
+      'آپلود و دانلود فایل',
+      'اشتراک‌گذاری با لینک اختصاصی',
+      'مدیریت پوشه‌ها',
+      'پشتیبانی از R2 و S3',
+      'رابط کاربری واکنش‌گرا'
+    ],
+    repo:null,
+    homepage:null,
+    icon:'☁️'
+  },
+  {
+    id:'mlm',
+    name:'MLM',
+    developer:'MLM Project',
+    tagline:'ابزار مدیریت و مانیتورینگ لینک‌های نرم‌افزاری',
+    description:'MLM ابزاری متن‌باز برای مدیریت، دسته‌بندی و مانیتورینگ لینک‌های دانلود نرم‌افزار است. برای توسعه‌دهندگانی که می‌خواهند لینک‌های خود را در یک داشبورد ساده مدیریت کنند.',
+    category:'dev',
+    tags:['dev','links','dashboard','monitoring','json'],
+    version:'1.4.0',
+    releasedAt:'2024-10-05',
+    size:'3.1 MB',
+    architectures:['all'],
+    features:[
+      'مدیریت متمرکز لینک‌ها',
+      'بررسی خودکار سلامت لینک',
+      'دسته‌بندی سفارشی',
+      'خروجی JSON و CSV',
+      'API ساده برای توسعه‌دهندگان'
+    ],
+    repo:null,
+    homepage:null,
+    icon:'🧰'
+  },
+  {
+    id:'hiddify',
+    name:'Hiddify',
+    developer:'Hiddify',
+    tagline:'کلاینت چندسکویی تونل‌زنی بر پایه Sing-box',
+    description:'Hiddify یکی از محبوب‌ترین کلاینت‌های متن‌باز تونل‌زنی است که روی هسته Sing-box ساخته شده و از تمام پروتکل‌های مدرن پشتیبانی می‌کند.',
+    category:'vpn',
+    tags:['vpn','sing-box','tunnel','proxy'],
+    version:'2.5.7',
+    releasedAt:'2025-01-18',
+    size:'28.4 MB',
+    architectures:['arm64-v8a','armeabi-v7a','x86_64'],
+    features:[
+      'پشتیبانی از تمام پروتکل‌های Sing-box',
+      'حالت Split Tunneling پیشرفته',
+      'پشتیبانی از اشتراک و کانفیگ آنلاین',
+      'حالت پروکسی محلی',
+      'به‌روزرسانی خودکار کانفیگ'
+    ],
+    repo:'hiddify/hiddify-app',
+    homepage:'https://github.com/hiddify/hiddify-app',
+    icon:'🌐'
+  },
+  {
+    id:'wireguard',
+    name:'WireGuard',
+    developer:'WireGuard',
+    tagline:'پروتکل VPN مدرن، سریع و امن',
+    description:'WireGuard یک پروتکل VPN مدرن است که با طراحی ساده و کارایی بالا، جایگزین مناسبی برای OpenVPN محسوب می‌شود. کدبیس کوچک آن بررسی امنیتی را آسان‌تر می‌کند.',
+    category:'vpn',
+    tags:['vpn','wireguard','secure','kernel'],
+    version:'1.0.20240901',
+    releasedAt:'2024-09-01',
+    size:'12.6 MB',
+    architectures:['arm64-v8a','armeabi-v7a','x86','x86_64'],
+    features:[
+      'رمزنگاری ChaCha20 و Curve25519',
+      'کدبیس کوچک و قابل بررسی',
+      'عملکرد سریع و تأخیر پایین',
+      'پشتیبانی از Roaming',
+      'متن‌باز و رایگان'
+    ],
+    repo:'WireGuard/wireguard-android',
+    homepage:'https://www.wireguard.com',
+    icon:'🔒'
+  }
+];
 
-      // فعال کردن آیتم
-      document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
-      const active = Array.from(document.querySelectorAll('.channel-item')).find(el => el.textContent === name);
-      if (active) active.classList.add('active');
+/* ============================================================
+   2) آیکون‌ها
+   ============================================================ */
+const ICONS = {
+  heart:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>`,
+  tag:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
+  hdd:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+  globe:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>`,
+  arrow:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>`,
+  check:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  link:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>`,
+  sun:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`,
+  moon:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`,
+  external: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>`,
+  alert:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>`,
+  package:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.5 4.2M21 16V8a2 2 0 0 0-1-1.7l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.7l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg>`,
+  info:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`,
+  search:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>`,
+};
+const icon = n => ICONS[n] || '';
 
-      const proxiedUrl = `\( {WORKER_URL}/proxy?url= \){encodeURIComponent(streamUrl)}`;
-      status.textContent = `در حال پخش: ${name}`;
+/* ============================================================
+   3) وضعیت برنامه
+   ============================================================ */
+const state = {
+  search:'',
+  category:'all',
+  arch:'all',
+  sort:'featured',
+  favorites:new Set(loadJSON('spaedr:favs', [])),
+  cameFromStore:false,
+};
 
-      if (Hls.isSupported()) {
-        currentHls = new Hls({ enableWorker: true, lowLatencyMode: true, backBufferLength: 30 });
-        currentHls.loadSource(proxiedUrl);
-        currentHls.attachMedia(video);
-      } else {
-        video.src = proxiedUrl;
+function loadJSON(k, fb){ try { const v = JSON.parse(localStorage.getItem(k)); return v ?? fb; } catch { return fb; } }
+function saveJSON(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+function saveFavs(){ saveJSON('spaedr:favs', [...state.favorites]); }
+
+/* ============================================================
+   4) ابزارها
+   ============================================================ */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function fmtDate(iso){
+  if (!iso) return '—';
+  try {
+    return new Intl.DateTimeFormat('fa-IR', {year:'numeric', month:'short', day:'numeric'}).format(new Date(iso));
+  } catch { return iso; }
+}
+function formatBytes(b){
+  if (b == null) return '';
+  const u = ['B','KB','MB','GB'];
+  let i = 0, n = b;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  const digits = n < 10 && i > 0 ? 1 : 0;
+  return `${n.toFixed(digits)} ${u[i]}`;
+}
+function parseArch(name){
+  const s = String(name).toLowerCase();
+  if (/arm64|aarch64/.test(s)) return 'arm64-v8a';
+  if (/armeabi|armv7/.test(s)) return 'armeabi-v7a';
+  if (/x86_64/.test(s))        return 'x86_64';
+  if (/\bx86\b/.test(s))       return 'x86';
+  if (/universal/.test(s))     return 'universal';
+  return '';
+}
+function compareVersions(a, b){
+  const pa = String(a).split(/[.\-+_]/).map(x => /^\d+$/.test(x) ? +x : x);
+  const pb = String(b).split(/[.\-+_]/).map(x => /^\d+$/.test(x) ? +x : x);
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++){
+    const x = pa[i] ?? 0, y = pb[i] ?? 0;
+    if (x === y) continue;
+    return x > y ? 1 : -1;
+  }
+  return 0;
+}
+const catLabel = id => CATEGORIES.find(c => c.id === id)?.label || id;
+
+/* ============================================================
+   5) Toast
+   ============================================================ */
+function toast(msg, type='info', ms=2400){
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .2s'; setTimeout(() => t.remove(), 220); }, ms);
+}
+
+/* ============================================================
+   6) GitHub Releases + کش
+   ============================================================ */
+const releaseCache = new Map();
+const RELEASE_TTL = 60 * 60 * 1000; // 1 ساعت
+
+async function getLatestRelease(repo){
+  if (!repo) return null;
+  if (releaseCache.has(repo)) return releaseCache.get(repo);
+
+  const key = `spaedr:rel:${repo}`;
+  const cached = loadJSON(key, null);
+  if (cached && Date.now() - cached.ts < RELEASE_TTL){
+    releaseCache.set(repo, cached.data);
+    return cached.data;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
+      headers: { 'Accept':'application/vnd.github+json' },
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    releaseCache.set(repo, data);
+    saveJSON(key, { ts: Date.now(), data });
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+/* ============================================================
+   7) ساخت لینک‌های دانلود
+   ============================================================ */
+function buildDownloads(app, release){
+  const list = [];
+
+  if (release && Array.isArray(release.assets)) {
+    for (const a of release.assets){
+      if (/\.(apk|exe|dmg|zip|tar\.gz|deb|rpm|apks|aab)$/i.test(a.name) || !/\.(sha|sig|txt|md|json)$/i.test(a.name)) {
+        list.push({
+          name: a.name,
+          url: a.browser_download_url,
+          size: formatBytes(a.size),
+          arch: parseArch(a.name),
+          source: 'GitHub Releases',
+          verified: true,
+        });
       }
-
-      video.play().catch(() => {});
     }
+  }
 
-    function addCustom() {
-      const url = document.getElementById('newUrl').value.trim();
-      if (!url) return alert('لینک را وارد کنید');
-      loadChannel("پخش سفارشی", url);
-      document.getElementById('newUrl').value = '';
+  if (!list.length && app.repo){
+    list.push({
+      name: 'صفحه رسمی Releases',
+      url: `https://github.com/${app.repo}/releases`,
+      size: '',
+      arch: '',
+      source: 'GitHub',
+      verified: false,
+    });
+  }
+  if (!list.length && app.homepage){
+    list.push({
+      name: 'صفحه رسمی برنامه',
+      url: app.homepage,
+      size: '',
+      arch: '',
+      source: 'وب‌سایت رسمی',
+      verified: false,
+    });
+  }
+  return list;
+}
+
+/* ============================================================
+   8) فیلتر و مرتب‌سازی
+   ============================================================ */
+function filterApps(){
+  const q = state.search.trim().toLowerCase();
+  let list = APPS.filter(a => {
+    if (state.category !== 'all' && a.category !== state.category) return false;
+    if (state.arch !== 'all' && !a.architectures.includes(state.arch)) return false;
+    if (q){
+      const hay = [a.name, a.developer, a.tagline, a.description, a.tags.join(' ')].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
     }
-
-    window.onload = () => {
-      const list = document.getElementById('channelList');
-      channels.forEach(ch => {
-        const li = document.createElement('li');
-        li.className = 'channel-item';
-        li.textContent = ch.name;
-        li.onclick = () => loadChannel(ch.name, ch.url);
-        list.appendChild(li);
+    return true;
+  });
+  switch (state.sort){
+    case 'newest': list.sort((a,b) => (b.releasedAt || '').localeCompare(a.releasedAt || '')); break;
+    case 'name':   list.sort((a,b) => a.name.localeCompare(b.name, 'fa')); break;
+    case 'fav':    list = list.filter(a => state.favorites.has(a.id)); break;
+    case 'featured':
+    default:
+      list.sort((a,b) => {
+        const fa = state.favorites.has(a.id) ? 0 : 1;
+        const fb = state.favorites.has(b.id) ? 0 : 1;
+        return fa - fb;
       });
+  }
+  return list;
+}
 
-      // پخش خودکار اولین کانال
-      loadChannel(channels[0].name, channels[0].url);
-    };
-  </script>
+/* ============================================================
+   9) کارت
+   ============================================================ */
+function renderCard(a){
+  const isFav = state.favorites.has(a.id);
+  const isWeb = a.category === 'web' || a.size === 'وب‌اپلیکیشن';
+  return `
+    <article class="card" data-id="${esc(a.id)}" tabindex="0" role="button" aria-label="مشاهده جزئیات ${esc(a.name)}">
+      <button class="fav-btn ${isFav ? 'active' : ''}" data-fav="${esc(a.id)}"
+              aria-label="${isFav ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}"
+              title="${isFav ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}">
+        ${icon('heart')}
+      </button>
+      <div class="card-head">
+        <div class="card-icon" aria-hidden="true">${esc(a.icon)}</div>
+        <div class="card-titles">
+          <div class="card-name">${esc(a.name)}</div>
+          <div class="card-dev">${esc(a.developer)}</div>
+        </div>
+      </div>
+      <p class="card-tagline">${esc(a.tagline)}</p>
+      <div class="card-foot">
+        <span class="meta-pill accent">${icon('tag')} v${esc(a.version)}</span>
+        <span class="meta-pill">${icon('calendar')} ${fmtDate(a.releasedAt)}</span>
+        ${isWeb
+          ? `<span class="meta-pill">${icon('globe')} وب‌اپ</span>`
+          : `<span class="meta-pill">${icon('hdd')} ${esc(a.size || '—')}</span>`}
+      </div>
+    </article>
+  `;
+}
+
+function emptyState(){
+  return `
+    <div class="empty">
+      ${icon('search')}
+      <h3>نتیجه‌ای پیدا نشد</h3>
+      <p>عبارت جستجو یا فیلترها را تغییر دهید.</p>
+    </div>
+  `;
+}
+
+/* ============================================================
+   10) صفحه فروشگاه
+   ============================================================ */
+function renderStore(){
+  const root = document.getElementById('app');
+  const list = filterApps();
+
+  root.innerHTML = `
+    <div class="toolbar">
+      <div class="chips" id="catChips" role="tablist" aria-label="دسته‌بندی">
+        ${CATEGORIES.map(c => `
+          <button class="chip ${state.category === c.id ? 'active' : ''}"
+                  data-cat="${esc(c.id)}" role="tab"
+                  aria-selected="${state.category === c.id}">${esc(c.label)}</button>
+        `).join('')}
+      </div>
+      <select class="chip" id="archFilter" aria-label="فیلتر معماری">
+        <option value="all">همه معماری‌ها</option>
+        <option value="arm64-v8a">arm64-v8a</option>
+        <option value="armeabi-v7a">armeabi-v7a</option>
+        <option value="x86_64">x86_64</option>
+      </select>
+      <select class="chip" id="sortBy" aria-label="مرتب‌سازی">
+        <option value="featured">پیشنهادی</option>
+        <option value="newest">جدیدترین</option>
+        <option value="name">نام (الفبا)</option>
+        <option value="fav">علاقه‌مندی‌ها</option>
+      </select>
+    </div>
+    ${list.length
+      ? `<div class="grid">${list.map(renderCard).join('')}</div>`
+      : emptyState()}
+  `;
+
+  document.getElementById('archFilter').value = state.arch;
+  document.getElementById('sortBy').value = state.sort;
+
+  document.getElementById('catChips').addEventListener('click', e => {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    state.category = btn.dataset.cat;
+    renderStore();
+  });
+  document.getElementById('archFilter').addEventListener('change', e => {
+    state.arch = e.target.value;
+    renderStore();
+  });
+  document.getElementById('sortBy').addEventListener('change', e => {
+    state.sort = e.target.value;
+    renderStore();
+  });
+}
+
+/* ============================================================
+   11) صفحه جزئیات
+   ============================================================ */
+async function renderDetails(app){
+  const root = document.getElementById('app');
+  root.innerHTML = `
+    <div class="details">
+      <div class="skeleton" style="height:38px;width:180px;margin-bottom:16px"></div>
+      <div class="skeleton" style="height:200px;margin-bottom:24px"></div>
+      <div class="skeleton" style="height:140px"></div>
+    </div>
+  `;
+
+  let release = null;
+  if (app.repo) release = await getLatestRelease(app.repo);
+
+  const latestVersion = release?.tag_name?.replace(/^v/, '') || app.version;
+  const latestDate    = release?.published_at ? release.published_at.slice(0,10) : app.releasedAt;
+  const downloads     = buildDownloads(app, release);
+  const isFav         = state.favorites.has(app.id);
+  const hasUpdate     = release && compareVersions(latestVersion, app.version) > 0;
+
+  root.innerHTML = `
+    <div class="details">
+      <button class="back-btn" id="backBtn">${icon('arrow')} بازگشت به فروشگاه</button>
+
+      <div class="details-hero">
+        <div class="details-icon" aria-hidden="true">${esc(app.icon)}</div>
+        <div class="details-titles">
+          <h1 class="details-name">${esc(app.name)}</h1>
+          <div class="details-dev">توسعه‌دهنده: ${esc(app.developer)}</div>
+          <p class="details-tagline">${esc(app.tagline)}</p>
+
+          <div class="details-actions">
+            ${downloads[0]
+              ? `<a class="btn btn-primary" href="${esc(downloads[0].url)}" target="_blank" rel="noopener noreferrer">${icon('download')} دانلود</a>`
+              : ''}
+            <button class="btn btn-secondary" id="favBtn" aria-pressed="${isFav}">
+              ${icon('heart')} ${isFav ? 'در علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی'}
+            </button>
+            ${app.repo
+              ? `<a class="btn btn-ghost" href="https://github.com/${esc(app.repo)}" target="_blank" rel="noopener noreferrer">${icon('external')} مخزن رسمی</a>`
+              : ''}
+            ${app.homepage
+              ? `<a class="btn btn-ghost" href="${esc(app.homepage)}" target="_blank" rel="noopener noreferrer">${icon('link')} وب‌سایت</a>`
+              : ''}
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <h2 class="section-title">${icon('info')} درباره</h2>
+        <p style="color:var(--text-dim);line-height:1.9;margin:0">${esc(app.description)}</p>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">${icon('package')} مشخصات</h2>
+        <div class="meta-grid">
+          <div class="meta-card">
+            <div class="meta-label">نسخه اعلام‌شده</div>
+            <div class="meta-value">${esc(app.version)}</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">آخرین نسخه منتشرشده</div>
+            <div class="meta-value">
+              ${esc(latestVersion)}
+              ${hasUpdate ? '<span style="color:var(--success);font-size:11px;font-weight:600"> • به‌روزرسانی موجود</span>' : ''}
+            </div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">تاریخ انتشار</div>
+            <div class="meta-value">${fmtDate(latestDate)}</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">حجم</div>
+            <div class="meta-value">${esc(app.size || '—')}</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">دسته‌بندی</div>
+            <div class="meta-value">${esc(catLabel(app.category))}</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">معماری‌ها</div>
+            <div class="meta-value" style="font-size:12px">
+              ${app.architectures.length ? app.architectures.map(esc).join(' • ') : '—'}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">${icon('check')} ویژگی‌ها</h2>
+        <ul class="features">
+          ${app.features.map(f => `<li>${esc(f)}</li>`).join('')}
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">${icon('download')} فایل‌های دانلود</h2>
+        <div class="downloads">
+          ${downloads.length
+            ? downloads.map(renderDownload).join('')
+            : `<div class="meta-card" style="text-align:center;color:var(--text-mute)">
+                 فایل قابل دانلود مستقیمی برای این برنامه ثبت نشده است.
+               </div>`}
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title">${icon('tag')} برچسب‌ها</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${app.tags.map(t => `<span class="chip" style="cursor:default">#${esc(t)}</span>`).join('')}
+        </div>
+      </section>
+    </div>
+  `;
+
+  document.getElementById('backBtn').addEventListener('click', closeDetails);
+  document.getElementById('favBtn').addEventListener('click', () => {
+    toggleFav(app.id);
+    const now = state.favorites.has(app.id);
+    const btn = document.getElementById('favBtn');
+    btn.innerHTML = `${icon('heart')} ${now ? 'در علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی'}`;
+    btn.setAttribute('aria-pressed', String(now));
+    toast(now ? 'به علاقه‌مندی‌ها اضافه شد' : 'از علاقه‌مندی‌ها حذف شد', 'success', 1600);
+  });
+}
+
+function renderDownload(d){
+  return `
+    <div class="dl-row">
+      <div class="dl-icon" aria-hidden="true">${icon('download')}</div>
+      <div class="dl-info">
+        <div class="dl-name">${esc(d.name)}</div>
+        <div class="dl-meta">
+          ${d.arch   ? `<span>${esc(d.arch)}</span>` : ''}
+          ${d.size   ? `<span>${esc(d.size)}</span>` : ''}
+          ${d.source ? `<span>${esc(d.source)}</span>` : ''}
+        </div>
+      </div>
+      <span class="dl-badge ${d.verified ? 'verified' : 'unverified'}">
+        ${d.verified ? icon('check') + ' تأییدشده' : icon('alert') + ' تأییدنشده'}
+      </span>
+      <a class="btn btn-secondary" href="${esc(d.url)}" target="_blank" rel="noopener noreferrer">
+        ${icon('download')} دریافت
+      </a>
+    </div>
+  `;
+}
+
+/* ============================================================
+   12) مسیریابی
+   ============================================================ */
+function openApp(id){
+  state.cameFromStore = true;
+  const url = new URL(location.href);
+  url.searchParams.set('app', id);
+  history.pushState({ view:'details', id }, '', url);
+  renderRoute();
+}
+
+function closeDetails(){
+  if (state.cameFromStore && history.length > 1){
+    history.back(); // popstate → renderRoute
+  } else {
+    const url = new URL(location.href);
+    url.searchParams.delete('app');
+    history.replaceState({ view:'store' }, '', url);
+    renderRoute();
+  }
+}
+
+function renderRoute(){
+  const appId = new URL(location.href).searchParams.get('app');
+  const app = appId ? APPS.find(a => a.id === appId) : null;
+
+  if (app){
+    document.title = `${app.name} — SpaedrNG`;
+    renderDetails(app);
+  } else {
+    state.cameFromStore = false;
+    document.title = 'SpaedrNG — فروشگاه نرم‌افزار';
+    renderStore();
+  }
+  window.scrollTo({ top:0, behavior:'auto' });
+}
+
+/* ============================================================
+   13) تم
+   ============================================================ */
+function applyTheme(t){
+  document.documentElement.dataset.theme = t;
+  const meta = document.getElementById('metaTheme');
+  if (meta) meta.content = t === 'light' ? '#f4f6fa' : '#0D1017';
+  const btn = document.getElementById('themeBtn');
+  if (btn){
+    btn.innerHTML = t === 'light' ? icon('moon') : icon('sun');
+    btn.setAttribute('aria-label', t === 'light' ? 'فعال‌سازی تم تیره' : 'فعال‌سازی تم روشن');
+  }
+}
+
+function toggleFav(id){
+  if (state.favorites.has(id)) state.favorites.delete(id);
+  else state.favorites.add(id);
+  saveFavs();
+}
+
+/* ============================================================
+   14) PWA Manifest
+   ============================================================ */
+function setupManifest(){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#0D1017"/><text x="50%" y="54%" font-family="sans-serif" font-size="280" font-weight="800" fill="#C49A6C" text-anchor="middle" dominant-baseline="middle">S</text></svg>`;
+  const iconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+
+  const manifest = {
+    name: 'SpaedrNG',
+    short_name: 'SpaedrNG',
+    description: 'فروشگاه نرم‌افزارهای امن و متن‌باز',
+    start_url: '.',
+    scope: '.',
+    display: 'standalone',
+    background_color: '#0D1017',
+    theme_color: '#0D1017',
+    icons: [
+      { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+    ],
+  };
+  try {
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    document.getElementById('manifest').href = URL.createObjectURL(blob);
+  } catch { /* noop */ }
+}
+
+/* ============================================================
+   15) راه‌اندازی
+   ============================================================ */
+function init(){
+  // تم
+  const savedTheme = localStorage.getItem('spaedr:theme');
+  const prefersLight = window.matchMedia?.('(prefers-color-scheme: light)').matches;
+  applyTheme(savedTheme || (prefersLight ? 'light' : 'dark'));
+
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('spaedr:theme', next);
+  });
+
+  // جستجو با debounce
+  const searchInput = document.getElementById('search');
+  let searchTimer;
+  searchInput.addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    const v = e.target.value;
+    searchTimer = setTimeout(() => {
+      state.search = v;
+      if (!new URL(location.href).searchParams.get('app')) renderStore();
+      else renderStore();
+    }, 140);
+  });
+
+  // رویدادهای سراسری
+  document.addEventListener('click', e => {
+    const favBtn = e.target.closest('[data-fav]');
+    if (favBtn){
+      e.stopPropagation();
+      e.preventDefault();
+      const id = favBtn.dataset.fav;
+      toggleFav(id);
+      favBtn.classList.toggle('active');
+      toast(state.favorites.has(id) ? 'به علاقه‌مندی‌ها اضافه شد' : 'از علاقه‌مندی‌ها حذف شد', 'success', 1400);
+      return;
+    }
+
+    const card = e.target.closest('.card');
+    if (card){
+      openApp(card.dataset.id);
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' '){
+      const card = e.target.closest?.('.card');
+      if (card){ e.preventDefault(); openApp(card.dataset.id); }
+    }
+    if (e.key === 'Escape'){
+      if (new URL(location.href).searchParams.get('app')) closeDetails();
+    }
+  });
+
+  // مسیر اولیه: اگر کاربر مستقیم روی ?app=id وارد شد،
+  // یک ورودی «فروشگاه» زیر آن می‌سازیم تا دکمه بازگشت درست کار کند.
+  const initialApp = new URL(location.href).searchParams.get('app');
+  if (initialApp && APPS.some(a => a.id === initialApp)){
+    const cleanUrl = location.pathname + location.hash;
+    history.replaceState({ view:'details', id: initialApp }, '', location.href);
+    history.pushState({ view:'store' }, '', cleanUrl);
+    history.pushState({ view:'details', id: initialApp }, '', location.href);
+    history.go(-1);
+  }
+
+  window.addEventListener('popstate', renderRoute);
+
+  setupManifest();
+  renderRoute();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
 </body>
 </html>
