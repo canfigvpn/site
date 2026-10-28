@@ -1,7 +1,7 @@
 package ir.ef3.floki000;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -24,6 +23,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,43 +36,67 @@ public class MainActivity extends Activity {
     private FrameLayout root;
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
-    private TextView siteMenuButton;
+    private TextView pageTitle;
+    private TextView openPanelButton;
     private int selectedSite = 0;
+    private Dialog sitePanel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         enableImmersiveMode();
-        getWindow().setStatusBarColor(Color.BLACK);
-        getWindow().setNavigationBarColor(Color.BLACK);
+        getWindow().setStatusBarColor(Color.rgb(12, 15, 22));
+        getWindow().setNavigationBarColor(Color.rgb(12, 15, 22));
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(10, 12, 18));
+        root.setBackgroundColor(Color.rgb(12, 15, 22));
+
+        LinearLayout appLayout = new LinearLayout(this);
+        appLayout.setOrientation(LinearLayout.VERTICAL);
+        appLayout.setBackgroundColor(Color.rgb(12, 15, 22));
+        root.addView(appLayout, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+        // Slim top frame: the web page starts below it, never underneath it.
+        LinearLayout topBar = new LinearLayout(this);
+        topBar.setGravity(Gravity.CENTER_VERTICAL);
+        topBar.setPadding(dp(16), 0, dp(16), 0);
+        topBar.setBackgroundColor(Color.rgb(12, 15, 22));
+        pageTitle = new TextView(this);
+        pageTitle.setText("EF3.IR");
+        pageTitle.setTextColor(Color.rgb(215, 222, 235));
+        pageTitle.setTextSize(13);
+        pageTitle.setTypeface(Typeface.DEFAULT_BOLD);
+        topBar.addView(pageTitle, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        appLayout.addView(topBar, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(34)));
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(10, 12, 18));
-        root.addView(webView, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        appLayout.addView(webView, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
-        siteMenuButton = new TextView(this);
-        siteMenuButton.setText("☰");
-        siteMenuButton.setTextColor(Color.WHITE);
-        siteMenuButton.setTextSize(23);
-        siteMenuButton.setGravity(Gravity.CENTER);
-        siteMenuButton.setTypeface(Typeface.DEFAULT_BOLD);
-        siteMenuButton.setContentDescription("انتخاب سایت");
-        GradientDrawable buttonBackground = new GradientDrawable();
-        buttonBackground.setColor(Color.rgb(30, 39, 57));
-        buttonBackground.setCornerRadius(dp(18));
-        buttonBackground.setStroke(dp(1), Color.rgb(71, 91, 125));
-        siteMenuButton.setBackground(buttonBackground);
-        siteMenuButton.setElevation(dp(8));
-        siteMenuButton.setOnClickListener(v -> showSitePicker());
+        // Slim bottom frame is part of the layout; the web page does not extend behind it.
+        FrameLayout bottomBar = new FrameLayout(this);
+        bottomBar.setBackgroundColor(Color.rgb(12, 15, 22));
+        openPanelButton = new TextView(this);
+        openPanelButton.setText("‹");
+        openPanelButton.setTextColor(Color.rgb(173, 190, 218));
+        openPanelButton.setTextSize(25);
+        openPanelButton.setGravity(Gravity.CENTER);
+        openPanelButton.setTypeface(Typeface.DEFAULT);
+        openPanelButton.setContentDescription("باز کردن فهرست سایت‌ها");
+        openPanelButton.setBackground(makeBackground(Color.rgb(22, 28, 40), Color.rgb(39, 49, 68), dp(14)));
+        openPanelButton.setOnClickListener(v -> showSitePanel());
+        FrameLayout.LayoutParams arrowParams = new FrameLayout.LayoutParams(dp(42), dp(30),
+                Gravity.END | Gravity.CENTER_VERTICAL);
+        arrowParams.setMargins(0, 0, dp(10), 0);
+        bottomBar.addView(openPanelButton, arrowParams);
+        appLayout.addView(bottomBar, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
 
-        FrameLayout.LayoutParams menuParams = new FrameLayout.LayoutParams(dp(50), dp(50), Gravity.TOP | Gravity.END);
-        menuParams.setMargins(0, dp(14), dp(14), 0);
-        root.addView(siteMenuButton, menuParams);
         setContentView(root);
 
         WebSettings settings = webView.getSettings();
@@ -144,15 +168,123 @@ public class MainActivity extends Activity {
         });
 
         if (savedInstanceState != null && webView.restoreState(savedInstanceState) != null) {
-            // Restore the previous page and navigation history.
+            // Restored the previous page and navigation history.
         } else {
             webView.loadUrl(HOME_URL);
         }
     }
 
+    private GradientDrawable makeBackground(int fill, int stroke, int radius) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(fill);
+        drawable.setCornerRadius(radius);
+        drawable.setStroke(dp(1), stroke);
+        return drawable;
+    }
+
+    private void showSitePanel() {
+        if (sitePanel != null && sitePanel.isShowing()) {
+            sitePanel.dismiss();
+            return;
+        }
+
+        LinearLayout panel = new LinearLayout(this);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setPadding(dp(16), dp(14), dp(16), dp(12));
+        panel.setBackground(makeBackground(Color.rgb(18, 23, 33), Color.rgb(49, 62, 84), dp(20)));
+
+        TextView heading = new TextView(this);
+        heading.setText("رفتن به");
+        heading.setTextColor(Color.rgb(228, 234, 245));
+        heading.setTextSize(14);
+        heading.setTypeface(Typeface.DEFAULT_BOLD);
+        heading.setGravity(Gravity.END);
+        panel.addView(heading, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(30)));
+
+        addSiteRow(panel, "EF3.IR", "سایت اصلی", 0);
+        addSiteRow(panel, "PROXY.EF3.IR", "پروکسی", 1);
+
+        TextView close = new TextView(this);
+        close.setText("بستن");
+        close.setTextColor(Color.rgb(150, 166, 191));
+        close.setTextSize(12);
+        close.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams closeParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(34));
+        closeParams.topMargin = dp(4);
+        panel.addView(close, closeParams);
+        close.setOnClickListener(v -> {
+            if (sitePanel != null) sitePanel.dismiss();
+        });
+
+        sitePanel = new Dialog(this);
+        sitePanel.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        sitePanel.setContentView(panel);
+        Window window = sitePanel.getWindow();
+        if (window != null) {
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            WindowManager.LayoutParams lp = window.getAttributes();
+            lp.width = getResources().getDisplayMetrics().widthPixels - dp(28);
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            lp.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            lp.dimAmount = 0.28f;
+            lp.y = dp(50);
+            window.setAttributes(lp);
+        }
+        sitePanel.setOnDismissListener(d -> enableImmersiveMode());
+        sitePanel.show();
+        if (window != null) {
+            window.setLayout(getResources().getDisplayMetrics().widthPixels - dp(28),
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+        }
+        enableImmersiveMode();
+    }
+
+    private void addSiteRow(LinearLayout panel, String name, String subtitle, int index) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.VERTICAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(dp(12), dp(8), dp(12), dp(8));
+        row.setBackground(makeBackground(
+                selectedSite == index ? Color.rgb(30, 42, 60) : Color.rgb(23, 29, 41),
+                Color.rgb(42, 53, 72), dp(12)));
+
+        TextView title = new TextView(this);
+        title.setText(name);
+        title.setTextColor(Color.rgb(224, 231, 243));
+        title.setTextSize(13);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setGravity(Gravity.END);
+        row.addView(title, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        TextView detail = new TextView(this);
+        detail.setText(subtitle);
+        detail.setTextColor(Color.rgb(143, 157, 180));
+        detail.setTextSize(11);
+        detail.setGravity(Gravity.END);
+        LinearLayout.LayoutParams detailParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        detailParams.topMargin = dp(2);
+        row.addView(detail, detailParams);
+
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(58));
+        rowParams.topMargin = dp(7);
+        panel.addView(row, rowParams);
+        row.setOnClickListener(v -> {
+            selectedSite = index;
+            pageTitle.setText(SITE_NAMES[index]);
+            webView.stopLoading();
+            webView.loadUrl(SITE_URLS[index]);
+            if (sitePanel != null) sitePanel.dismiss();
+        });
+    }
+
     private void enableImmersiveMode() {
-        Window window = getWindow();
-        window.getDecorView().setSystemUiVisibility(
+        getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -165,22 +297,6 @@ public class MainActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         if (hasFocus) enableImmersiveMode();
-    }
-
-    private void showSitePicker() {
-        String[] options = {"EF3.IR  •  سایت اصلی", "PROXY.EF3.IR  •  پروکسی"};
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle("انتخاب سایت")
-                .setItems(options, (d, which) -> {
-                    selectedSite = which;
-                    webView.stopLoading();
-                    webView.loadUrl(SITE_URLS[which]);
-                    Toast.makeText(this, "در حال باز کردن " + SITE_NAMES[which], Toast.LENGTH_SHORT).show();
-                })
-                .setNegativeButton("بستن", null)
-                .create();
-        dialog.setOnDismissListener(d -> enableImmersiveMode());
-        dialog.show();
     }
 
     private int dp(int value) {
@@ -232,8 +348,13 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (sitePanel != null && sitePanel.isShowing()) {
+            sitePanel.dismiss();
+        } else if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
