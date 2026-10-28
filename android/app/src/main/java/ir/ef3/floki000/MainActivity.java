@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
         topBar.addView(pageTitle, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT));
         appLayout.addView(topBar, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(34)));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(30)));
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(10, 12, 18));
@@ -84,18 +84,18 @@ public class MainActivity extends Activity {
         openPanelButton = new TextView(this);
         openPanelButton.setText("‹");
         openPanelButton.setTextColor(Color.rgb(173, 190, 218));
-        openPanelButton.setTextSize(25);
+        openPanelButton.setTextSize(23);
         openPanelButton.setGravity(Gravity.CENTER);
         openPanelButton.setTypeface(Typeface.DEFAULT);
         openPanelButton.setContentDescription("باز کردن فهرست سایت‌ها");
-        openPanelButton.setBackground(makeBackground(Color.rgb(22, 28, 40), Color.rgb(39, 49, 68), dp(14)));
+        openPanelButton.setBackground(makeBackground(Color.rgb(14, 18, 26), Color.rgb(25, 31, 43), dp(12)));
         openPanelButton.setOnClickListener(v -> showSitePanel());
-        FrameLayout.LayoutParams arrowParams = new FrameLayout.LayoutParams(dp(42), dp(30),
+        FrameLayout.LayoutParams arrowParams = new FrameLayout.LayoutParams(dp(30), dp(26),
                 Gravity.END | Gravity.CENTER_VERTICAL);
         arrowParams.setMargins(0, 0, dp(10), 0);
         bottomBar.addView(openPanelButton, arrowParams);
         appLayout.addView(bottomBar, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(42)));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(32)));
 
         setContentView(root);
 
