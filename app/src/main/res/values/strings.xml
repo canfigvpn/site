@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FLOCH3</string>
+    <string name="loading">در حال بارگذاری FLOCH3…</string>
+    <string name="offline_title">اتصال اینترنت برقرار نیست</string>
+    <string name="offline_message">برای مشاهده سایت، اینترنت را بررسی کنید و دوباره تلاش کنید.</string>
+    <string name="retry">تلاش دوباره</string>
+</resources>
