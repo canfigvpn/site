@@ -38,10 +38,10 @@ class MainActivity : Activity() {
     companion object {
         private const val HOME_URL = "https://floch3.blogix.ir/"
         private const val FILE_CHOOSER_REQUEST = 4102
-        private const val GOLD = Color.rgb(214, 177, 94)
-        private const val BACKGROUND = Color.rgb(9, 11, 16)
-        private const val TEXT = Color.rgb(245, 245, 245)
-        private const val MUTED = Color.rgb(165, 173, 186)
+        private val GOLD = Color.rgb(214, 177, 94)
+        private val BACKGROUND = Color.rgb(9, 11, 16)
+        private val TEXT = Color.rgb(245, 245, 245)
+        private val MUTED = Color.rgb(165, 173, 186)
     }
 
     private lateinit var webView: WebView
@@ -63,6 +63,17 @@ class MainActivity : Activity() {
         val root = FrameLayout(this).apply {
             setBackgroundColor(BACKGROUND)
             layoutDirection = View.LAYOUT_DIRECTION_LTR
+            // Keep the web page clear of Android's status and navigation bars,
+            // including Android 15 edge-to-edge devices.
+            setOnApplyWindowInsetsListener { target, insets ->
+                target.setPadding(
+                    insets.systemWindowInsetLeft,
+                    insets.systemWindowInsetTop,
+                    insets.systemWindowInsetRight,
+                    insets.systemWindowInsetBottom
+                )
+                insets
+            }
         }
 
         webView = WebView(this).apply {
@@ -272,6 +283,7 @@ class MainActivity : Activity() {
         )
 
         setContentView(root)
+        root.requestApplyInsets()
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState)
